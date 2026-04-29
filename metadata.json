@@ -1,5 +1,6 @@
 {
   "owner": "golang",
   "name": "govulncheck-action",
-  "visibility": ""
+  "visibility": "internal",
+  "description": "[mirror] GitHub action for govulncheck"
 }

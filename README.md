@@ -1,5 +1,7 @@
 # golang/govulncheck-action
 
+[mirror] GitHub action for govulncheck
+
 Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/golang/govulncheck-action](https://github.com/golang/govulncheck-action).
 
 ## Versions
