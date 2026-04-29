@@ -1,6 +1,12 @@
 # golang/govulncheck-action
 
-Hardened GitHub Action by [Chainguard](https://www.chainguard.dev).
+Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/golang/govulncheck-action](https://github.com/golang/govulncheck-action).
+
+## Versions
+
+| Version | Tag | Upstream commit |
+|---------|-----|-----------------|
+| v1.0.4 | [`v1.0.4`](https://github.com/chainguard-actions/govulncheck-action/tree/v1.0.4) | — |
 
 ## Privacy
 
