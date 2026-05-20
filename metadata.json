@@ -1,7 +1,0 @@
-{
-  "owner": "golang",
-  "name": "govulncheck-action",
-  "visibility": "internal",
-  "description": "[mirror] GitHub action for govulncheck",
-  "block_publish": false
-}
