@@ -1,0 +1,31 @@
+name: Test govulncheck JSON output format
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          go-version-input: 'stable'
+          repo-checkout: 'false'
+          work-dir: '${{ github.workspace }}/tests/fixtures/gomod'
+          go-package: './...'
+          output-format: 'json'
+          output-file: '/tmp/govulncheck-output.json'
+      - name: Assert JSON output file was created and is valid JSON
+        run: |
+          if [ ! -f /tmp/govulncheck-output.json ]; then
+            echo "FAIL: output file /tmp/govulncheck-output.json was not created"
+            exit 1
+          fi
+          echo "JSON output file contents:"
+          cat /tmp/govulncheck-output.json
+          # Validate it contains JSON by checking for opening brace or bracket
+          if ! grep -qE '^\{|^\[|\{"' /tmp/govulncheck-output.json; then
+            echo "FAIL: output does not appear to be valid JSON"
+            exit 1
+          fi
+          echo "PASS: JSON output file exists and contains JSON content"
