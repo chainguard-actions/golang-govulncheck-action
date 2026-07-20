@@ -1,4 +1,4 @@
-name: Test govulncheck with work-dir input
+name: Test work-dir input
 on:
   workflow_dispatch:
 jobs:
@@ -6,14 +6,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - id: action
+      - name: Run govulncheck in a subdirectory
+        id: action
         uses: .
         with:
           go-version-input: 'stable'
           repo-checkout: 'false'
-          work-dir: '${{ github.workspace }}/tests/fixtures/gomod'
+          work-dir: '${{ github.workspace }}/tests/fixtures/subdir-go/subpkg'
           go-package: './...'
           output-format: 'text'
-      - name: Assert govulncheck ran in the specified work directory
+      - name: Assert govulncheck ran successfully in subdirectory
         run: |
-          echo "PASS: govulncheck completed successfully in the specified work-dir"
+          echo "PASS: govulncheck completed in subdirectory without error"

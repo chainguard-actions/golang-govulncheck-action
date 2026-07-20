@@ -1,4 +1,4 @@
-name: Test basic govulncheck usage
+name: Test basic usage
 on:
   workflow_dispatch:
 jobs:
@@ -6,12 +6,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - id: action
+      - name: Run govulncheck on basic Go fixture
+        id: action
         uses: .
         with:
           go-version-input: 'stable'
           repo-checkout: 'false'
-          work-dir: '${{ github.workspace }}/tests/fixtures/gomod'
+          work-dir: '${{ github.workspace }}/tests/fixtures/basic-go'
           go-package: './...'
           output-format: 'text'
       - name: Assert govulncheck ran successfully

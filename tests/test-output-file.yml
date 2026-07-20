@@ -1,4 +1,4 @@
-name: Test govulncheck output to file
+name: Test output-file input
 on:
   workflow_dispatch:
 jobs:
@@ -6,21 +6,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - id: action
+      - name: Run govulncheck and save output to file
+        id: action
         uses: .
         with:
           go-version-input: 'stable'
           repo-checkout: 'false'
-          work-dir: '${{ github.workspace }}/tests/fixtures/gomod'
+          work-dir: '${{ github.workspace }}/tests/fixtures/basic-go'
           go-package: './...'
           output-format: 'text'
           output-file: '/tmp/govulncheck-output.txt'
       - name: Assert output file was created
         run: |
+          echo "Checking output file exists..."
           if [ ! -f /tmp/govulncheck-output.txt ]; then
             echo "FAIL: output file /tmp/govulncheck-output.txt was not created"
             exit 1
           fi
           echo "Output file contents:"
           cat /tmp/govulncheck-output.txt
-          echo "PASS: output file exists"
+          echo "PASS: output file was created"
