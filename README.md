@@ -8,7 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
-| v1.0.4 | [`v1.0.4`](https://github.com/chainguard-actions/golang-govulncheck-action/tree/v1.0.4) | — |
+| v1.0.4 | [`v1.0.4`](https://github.com/chainguard-actions/golang-govulncheck-action/tree/v1.0.4) | [`b625fbe`](https://github.com/golang/govulncheck-action/commit/b625fbe08f3bccbe446d94fbf87fcc875a4f50ee) |
 | v1.1.0 | [`v1.1.0`](https://github.com/chainguard-actions/golang-govulncheck-action/tree/v1.1.0) | [`032d455`](https://github.com/golang/govulncheck-action/commit/032d45514ae346b1db93c04b0c90b841c370344f) |
 
 ## Privacy
