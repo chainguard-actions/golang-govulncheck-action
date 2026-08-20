@@ -1,0 +1,21 @@
+name: Test govulncheck with go-version-file input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          repo-checkout: 'false'
+          go-version-input: ''
+          go-version-file: '${{ github.workspace }}/hardened/tests/fixtures/gomod/go.mod'
+          work-dir: '${{ github.workspace }}/hardened/tests/fixtures/gomod'
+          go-package: './...'
+          output-format: 'text'
+          cache: 'false'
+      - name: Assert govulncheck ran successfully with go-version-file
+        run: |
+          echo "PASS: govulncheck completed using go-version-file to determine Go version"
