@@ -18,4 +18,4 @@ jobs:
           cache: 'false'
       - name: Assert govulncheck ran successfully with go-version-file
         run: |
-          echo "PASS: govulncheck completed using go-version-file to determine Go version"
+          echo "PASS: govulncheck completed using go-version-file input"

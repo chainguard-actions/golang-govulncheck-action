@@ -57,8 +57,8 @@ runs:
           -d "{\"repository\":\"${GITHUB_REPOSITORY}\",\"action\":\"${GITHUB_ACTION_REPOSITORY}\"}" \
           "https://actions.enforce.dev/actions/v1/record" >/dev/null 2>&1 || true
     - if: inputs.repo-checkout != 'false' # only explicit false prevents repo checkout
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-    - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      uses: chainguard-actions/actions-checkout@0d7d3dceff7cec203fb66661cc99a9aea9561058 # v4.1.1
+    - uses: chainguard-actions/actions-setup-go@24db70522c35ade37aa305302d13d4cd52c3a419 # v5.0.0
       with:
         go-version: ${{ inputs.go-version-input }}
         check-latest: ${{ inputs.check-latest }}
@@ -70,17 +70,17 @@ runs:
     - if: inputs.output-file == ''
       name: Run govulncheck
       env:
-        WORK_DIR: ${{ inputs.work-dir }}
-        OUTPUT_FORMAT: ${{ inputs.output-format }}
-        GO_PACKAGE: ${{ inputs.go-package }}
-      run: govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" "$GO_PACKAGE"
+        INPUT_WORK_DIR: ${{ inputs.work-dir }}
+        INPUT_OUTPUT_FORMAT: ${{ inputs.output-format }}
+        INPUT_GO_PACKAGE: ${{ inputs.go-package }}
+      run: govulncheck -C "$INPUT_WORK_DIR" -format "$INPUT_OUTPUT_FORMAT" "$INPUT_GO_PACKAGE"
       shell: bash
     - if: inputs.output-file != ''
       name: Run govulncheck and save to file
       env:
-        WORK_DIR: ${{ inputs.work-dir }}
-        OUTPUT_FORMAT: ${{ inputs.output-format }}
-        GO_PACKAGE: ${{ inputs.go-package }}
-        OUTPUT_FILE: ${{ inputs.output-file }}
-      run: govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" "$GO_PACKAGE" > "$OUTPUT_FILE"
+        INPUT_WORK_DIR: ${{ inputs.work-dir }}
+        INPUT_OUTPUT_FORMAT: ${{ inputs.output-format }}
+        INPUT_GO_PACKAGE: ${{ inputs.go-package }}
+        INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
+      run: govulncheck -C "$INPUT_WORK_DIR" -format "$INPUT_OUTPUT_FORMAT" "$INPUT_GO_PACKAGE" > "$INPUT_OUTPUT_FILE"
       shell: bash
