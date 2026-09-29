@@ -10,7 +10,6 @@ jobs:
         uses: .
         with:
           repo-checkout: 'false'
-          go-version-input: ''
           go-version-file: '${{ github.workspace }}/hardened/tests/fixtures/gomod/go.mod'
           work-dir: '${{ github.workspace }}/hardened/tests/fixtures/gomod'
           go-package: './...'

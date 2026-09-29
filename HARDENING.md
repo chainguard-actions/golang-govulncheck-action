@@ -14,23 +14,34 @@ Action **golang--govulncheck-action/v1.0.4** was hardened automatically. 9 findi
 
 ## Findings Fixed
 
-### script-injection (severity: high)
-
-Sub-rule (a): Multiple `run:` blocks in action.yml directly interpolate `${{ inputs.* }}` expressions into shell command strings without routing through env vars. An attacker-controlled caller can supply values containing shell metacharacters (`;`, `|`, `&`, `$(...)`, etc.) that will be executed by the shell. Affected expressions: `${{ inputs.work-dir }}`, `${{ inputs.output-format }}`, `${{ inputs.go-package }}`, and `${{ inputs.output-file }}` appear directly in `govulncheck` invocations. These inputs should be moved to `env:` variables and then double-quoted in the shell script.
-
-Locations:
-
-- `action.yml:48`
-- `action.yml:53`
-
 ### unpinned-uses (severity: high)
 
-Two `uses:` references in action.yml use mutable version tags instead of immutable 40-character SHA commit digests, making the action vulnerable to supply-chain attacks if the referenced tag is moved or overwritten. Failing references: `actions/checkout@v4.1.1` and `actions/setup-go@v5.0.0`. These should be pinned to their full SHA, e.g. `actions/checkout@<40-hex-sha> # v4.1.1`.
+Two `uses:` references in action.yml use mutable version tags instead of full 40-character commit SHA digests, making the action vulnerable to supply-chain attacks if the upstream tag is moved or overwritten.
+- `actions/checkout@v4.1.1` (line ~40)
+- `actions/setup-go@v5.0.0` (line ~42)
+These should be pinned to their full SHA, e.g. `actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.1.1`.
 
 Locations:
 
-- `action.yml:43`
-- `action.yml:44`
+- `action.yml:40`
+- `action.yml:42`
+
+### script-injection (severity: high)
+
+Two `run:` steps directly interpolate user-controlled `inputs.*` expressions into shell command strings (sub-rule a). An attacker who controls the calling workflow can supply values containing shell metacharacters (`;`, `|`, `$(...)`, etc.) to achieve arbitrary command execution.
+
+Affected step "Run govulncheck" (line ~52):
+  `govulncheck -C ${{ inputs.work-dir }} -format ${{ inputs.output-format }} ${{ inputs.go-package }}`
+
+Affected step "Run govulncheck and save to file" (line ~56):
+  `govulncheck -C ${{ inputs.work-dir }} -format ${{ inputs.output-format }} ${{ inputs.go-package }} > ${{ inputs.output-file }}`
+
+All four inputs (`work-dir`, `output-format`, `go-package`, `output-file`) are `required: false` and caller-supplied. They must be moved to `env:` variables and double-quoted in the shell script.
+
+Locations:
+
+- `action.yml:52`
+- `action.yml:56`
 
 ### static-inline-injection (severity: high)
 
@@ -99,5 +110,5 @@ Locations:
 Fixed all findings in hardened/action/action.yml:
 1. Pinned actions/checkout@v4.1.1 → @b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 2. Pinned actions/setup-go@v5.0.0 → @0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
-3. Moved ${{ inputs.work-dir }}, ${{ inputs.output-format }}, ${{ inputs.go-package }}, and ${{ inputs.output-file }} from run: blocks into env: maps as INPUT_WORK_DIR, INPUT_OUTPUT_FORMAT, INPUT_GO_PACKAGE, and INPUT_OUTPUT_FILE respectively. All env vars are double-quoted in the shell commands to prevent word-splitting and shell injection.
+3. Moved all ${{ inputs.* }} expressions from run: blocks to env: maps (WORK_DIR, OUTPUT_FORMAT, GO_PACKAGE, OUTPUT_FILE) and referenced them with double-quoted "$VAR" syntax in both 'Run govulncheck' and 'Run govulncheck and save to file' steps.
 

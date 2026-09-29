@@ -70,17 +70,17 @@ runs:
     - if: inputs.output-file == ''
       name: Run govulncheck
       env:
-        INPUT_WORK_DIR: ${{ inputs.work-dir }}
-        INPUT_OUTPUT_FORMAT: ${{ inputs.output-format }}
-        INPUT_GO_PACKAGE: ${{ inputs.go-package }}
-      run: govulncheck -C "$INPUT_WORK_DIR" -format "$INPUT_OUTPUT_FORMAT" "$INPUT_GO_PACKAGE"
+        WORK_DIR: ${{ inputs.work-dir }}
+        OUTPUT_FORMAT: ${{ inputs.output-format }}
+        GO_PACKAGE: ${{ inputs.go-package }}
+      run: govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" "$GO_PACKAGE"
       shell: bash
     - if: inputs.output-file != ''
       name: Run govulncheck and save to file
       env:
-        INPUT_WORK_DIR: ${{ inputs.work-dir }}
-        INPUT_OUTPUT_FORMAT: ${{ inputs.output-format }}
-        INPUT_GO_PACKAGE: ${{ inputs.go-package }}
-        INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
-      run: govulncheck -C "$INPUT_WORK_DIR" -format "$INPUT_OUTPUT_FORMAT" "$INPUT_GO_PACKAGE" > "$INPUT_OUTPUT_FILE"
+        WORK_DIR: ${{ inputs.work-dir }}
+        OUTPUT_FORMAT: ${{ inputs.output-format }}
+        GO_PACKAGE: ${{ inputs.go-package }}
+        OUTPUT_FILE: ${{ inputs.output-file }}
+      run: govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" "$GO_PACKAGE" > "$OUTPUT_FILE"
       shell: bash
