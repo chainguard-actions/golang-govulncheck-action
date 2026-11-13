@@ -73,7 +73,14 @@ runs:
         WORK_DIR: ${{ inputs.work-dir }}
         OUTPUT_FORMAT: ${{ inputs.output-format }}
         GO_PACKAGE: ${{ inputs.go-package }}
-      run: govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" "$GO_PACKAGE"
+      run: |
+        pkgs=()
+        if [ -n "$GO_PACKAGE" ]; then
+          printf '%s' "$GO_PACKAGE" | xargs -r true >/dev/null
+          while IFS= read -r -d '' t; do pkgs+=("$t"); done \
+            < <(printf '%s' "$GO_PACKAGE" | xargs -r sh -c 'printf "%s\0" "$@"' sh)
+        fi
+        govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" ${pkgs[@]+"${pkgs[@]}"}
       shell: bash
     - if: inputs.output-file != ''
       name: Run govulncheck and save to file
@@ -82,5 +89,12 @@ runs:
         OUTPUT_FORMAT: ${{ inputs.output-format }}
         GO_PACKAGE: ${{ inputs.go-package }}
         OUTPUT_FILE: ${{ inputs.output-file }}
-      run: govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" "$GO_PACKAGE" > "$OUTPUT_FILE"
+      run: |
+        pkgs=()
+        if [ -n "$GO_PACKAGE" ]; then
+          printf '%s' "$GO_PACKAGE" | xargs -r true >/dev/null
+          while IFS= read -r -d '' t; do pkgs+=("$t"); done \
+            < <(printf '%s' "$GO_PACKAGE" | xargs -r sh -c 'printf "%s\0" "$@"' sh)
+        fi
+        govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" ${pkgs[@]+"${pkgs[@]}"} > "$OUTPUT_FILE"
       shell: bash

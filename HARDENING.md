@@ -4,22 +4,19 @@
 
 > This file was generated automatically by the hardening agent.
 
-**Policy SHA:** `d636be7e43ef829af6e853da6b3c7566db9f72fe`
+**Policy SHA:** `374911c4be584df24e6da57af2d990570ef0f859`
 
 **Test Policy SHA:** `843adf9e4b8f85d0c08b27b9d0b09dd094b54702`
 
 **Harden Agent Version:** `2`
 
-Action **golang--govulncheck-action/v1.0.4** was hardened automatically. 9 finding(s) were identified and resolved across 1 iteration(s).
+Action **golang--govulncheck-action/v1.0.4** was hardened automatically. 11 finding(s) were identified and resolved across 1 iteration(s).
 
 ## Findings Fixed
 
 ### unpinned-uses (severity: high)
 
-Two `uses:` references in action.yml use mutable version tags instead of pinned 40-character commit SHAs, making the action vulnerable to supply-chain attacks if those tags are moved:
-- `actions/checkout@v4.1.1`
-- `actions/setup-go@v5.0.0`
-These should be replaced with their full SHA digests (e.g. `actions/checkout@<40-char-sha> # v4.1.1`).
+Two composite steps point to version tags instead of full 40-character commit SHAs: 'uses: actions/checkout@v4.1.1' (line 43) and 'uses: actions/setup-go@v5.0.0' (line 44).
 
 Locations:
 
@@ -28,25 +25,19 @@ Locations:
 
 ### script-injection (severity: high)
 
-Two `run:` blocks directly interpolate `${{ inputs.* }}` expressions into shell command strings (sub-rule a). All four inputs — `inputs.work-dir`, `inputs.output-format`, `inputs.go-package`, and `inputs.output-file` — are caller-controlled and are substituted into the shell command before the shell ever sees them, enabling command injection via crafted input values containing shell metacharacters.
-
-Offending lines:
-- `run: govulncheck -C ${{ inputs.work-dir }} -format ${{ inputs.output-format }} ${{ inputs.go-package }}`
-- `run: govulncheck -C ${{ inputs.work-dir }} -format ${{ inputs.output-format }} ${{ inputs.go-package }} > ${{ inputs.output-file }}`
-
-Fix: move each input into an `env:` variable and reference it as a double-quoted shell variable, e.g.:
-```yaml
-env:
-  WORK_DIR: ${{ inputs.work-dir }}
-  OUTPUT_FORMAT: ${{ inputs.output-format }}
-  GO_PACKAGE: ${{ inputs.go-package }}
-run: govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" "$GO_PACKAGE"
-```
+Rule (a): expressions are inserted straight into the run: script. The step 'Run govulncheck' runs: 'govulncheck -C ${{ inputs.work-dir }} -format ${{ inputs.output-format }} ${{ inputs.go-package }}'. Each input should move into an env: variable and be expanded with double quotes.
 
 Locations:
 
-- `action.yml:51`
 - `action.yml:55`
+
+### script-injection (severity: high)
+
+Rule (a): expressions are inserted straight into the run: script. The step 'Run govulncheck and save to file' runs: 'govulncheck -C ${{ inputs.work-dir }} -format ${{ inputs.output-format }} ${{ inputs.go-package }} > ${{ inputs.output-file }}'. Each input should move into an env: variable and be expanded with double quotes.
+
+Locations:
+
+- `action.yml:59`
 
 ### static-inline-injection (severity: high)
 
@@ -104,16 +95,63 @@ Locations:
 
 - `action.yml:60`
 
+### prior-fix (severity: high)
+
+Carried forward from this version's previous harden, which fixed it; fix it again unless the code no longer has the problem. The previous harden changed action.yml without recording a finding for it, and this analysis reported nothing there. Re-apply its security changes unless the code no longer needs them. The previous patch:
+```diff
+diff --git a/action.yml b/action.yml
+index f7c11f6..1df16bb 100644
+--- a/action.yml
++++ b/action.yml
+@@ -39,9 +39,26 @@ inputs:
+ runs:
+   using: "composite"
+   steps:
+     - if: inputs.repo-checkout != 'false' # only explicit false prevents repo checkout
+       uses: actions/checkout@v4.1.1
+     - uses: actions/setup-go@v5.0.0
+       with:
+         go-version: ${{ inputs.go-version-input }}
+         check-latest: ${{ inputs.check-latest }}
+@@ -52,9 +69,18 @@ runs:
+       shell: bash
+     - if: inputs.output-file == ''
+       name: Run govulncheck
+-      run: govulncheck -C ${{ inputs.work-dir }} -format ${{ inputs.output-format }} ${{ inputs.go-package }}
++      env:
++        WORK_DIR: ${{ inputs.work-dir }}
++        OUTPUT_FORMAT: ${{ inputs.output-format }}
++        GO_PACKAGE: ${{ inputs.go-package }}
++      run: govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" "$GO_PACKAGE"
+       shell: bash
+     - if: inputs.output-file != ''
+       name: Run govulncheck and save to file
+-      run: govulncheck -C ${{ inputs.work-dir }} -format ${{ inputs.output-format }} ${{ inputs.go-package }} > ${{ inputs.output-file }}
++      env:
++        WORK_DIR: ${{ inputs.work-dir }}
++        OUTPUT_FORMAT: ${{ inputs.output-format }}
++        GO_PACKAGE: ${{ inputs.go-package }}
++        OUTPUT_FILE: ${{ inputs.output-file }}
++      run: govulncheck -C "$WORK_DIR" -format "$OUTPUT_FORMAT" "$GO_PACKAGE" > "$OUTPUT_FILE"
+       shell: bash
+
+```
+
+Locations:
+
+- `action.yml`
+
 ## Iteration Notes
 
 ### Iteration 1
 
-**Fixes applied:** unpinned-uses, script-injection, static-inline-injection
+**Fixes applied:** unpinned-uses, script-injection, static-inline-injection, prior-fix
 
 **Notes:**
 
-Fixed all findings in hardened/action/action.yml:
-1. Pinned actions/checkout@v4.1.1 to SHA b4ffde65f46336ab88eb53be808477a3936bae11
-2. Pinned actions/setup-go@v5.0.0 to SHA 0c52d547c9bc32b1aa3301fd7a9cb496313a4491
-3. Moved all ${{ inputs.* }} expressions (work-dir, output-format, go-package, output-file) from run: blocks into env: maps, referencing them as double-quoted shell variables to prevent script injection in both the 'Run govulncheck' and 'Run govulncheck and save to file' steps.
+All findings in action.yml are fixed. I haven't run the action to test the changes.
+
+- **Pinned actions:** `actions/checkout` is pinned to b4ffde65f46336ab88eb53be808477a3936bae11 (v4.1.1) and `actions/setup-go` to 0c52d547c9bc32b1aa3301fd7a9cb496313a4491 (v5.0.0). The tag stays as a comment on each line.
+- **Script injection:** Both govulncheck steps now take `work-dir`, `output-format`, `go-package` and `output-file` from the step's `env:` block instead of inline `${{ }}` expressions. The single values are passed double-quoted.
+- **Different from the previous harden:** that patch passed `go-package` as one quoted argument (`"$GO_PACKAGE"`). I split it into separate arguments instead. Upstream pasted it straight into the command, so a value listing several packages (for example `./cmd/... ./pkg/...`) reached govulncheck as several arguments, and one quoted string would have broken that. The split respects quotes the same way the original command did and does not run anything. It stops with an error if a quote is left open, and an empty value adds no argument.
 
